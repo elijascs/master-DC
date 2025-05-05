@@ -1,0 +1,74 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+
+%matplotlib inline
+
+# your file path
+excel_file_path = r'C:\Users\[...]\Excel\X.xlsx'
+
+# Load excel (Header in line 3, index 2)
+df = pd.read_excel(excel_file_path, header=2)
+
+# Change names of columns
+df.rename(columns={
+    'ml': 'ml',
+    'mAU': 'mAU',
+    'ml.2': '%_ml',
+    '%': '%',
+    'ml.3': 'Injection',
+    'ml.5': 'frac_ml',
+    'Fraction': 'frac'
+}, inplace=True)
+
+# Extract name of the excel-file without path and ending
+base_filename = os.path.splitext(os.path.basename(excel_file_path))[0]
+
+# Initialize plot
+fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(12, 6))  # Fitting size
+fs = 14
+
+# Assess max. elution volumne
+max_ml = df['ml'].max()  # Hier wird der maximale Wert von 'ml' gefunden
+
+# Plot data
+axs.plot(df['ml'], df['mAU'], color='tab:blue', label='$A_{280}$')  # Tiefgestelltes 280
+axs02 = axs.twinx()
+axs02.plot(df['%_ml'], 400 * df['%'] / 100, color='tab:orange', label='Imidazole conc.')
+
+# Set descriptions of axis
+axs.set_xlabel('Elution volume [mL]', fontsize=fs)  # Einheit für Elution volume
+axs.set_ylabel('$A_{280}$ [mAU]', fontsize=fs, color='tab:blue')  # Einheit für A280
+axs02.set_ylabel('Imidazole conc. [mM]', fontsize=fs, color='tab:orange')  # Einheit für Imidazole concentration
+
+# Limits of axis
+axs.set_ylim(0, 400)
+axs.set_xlim(-5, max_ml)  # Setzt das x-Limit auf den maximalen Wert von 'ml'
+axs02.set_ylim(0, 410)
+
+# annotation of fractions
+for i, j in zip(df['frac_ml'].dropna(), df['frac'].dropna()):
+    if j != "Waste(Frac)":
+        axs.vlines(i, 0, 43, color='k')
+        axs.text(i - 0.5, 45, j, rotation=45)
+
+# Adding the legend
+lines1, labels1 = axs.get_legend_handles_labels()
+lines2, labels2 = axs02.get_legend_handles_labels()
+axs.legend(
+    lines1 + lines2,
+    labels1 + labels2,
+    loc='upper right',
+    fontsize=fs,
+    frameon=False 
+)
+
+# Layout and safe
+fig.tight_layout() 
+
+# safe graphic (PNG and SVG) and show plot
+output_svg = f'{base_filename}.svg'
+output_png = f'{base_filename}.png'
+plt.savefig(output_svg, format='svg')  
+plt.savefig(output_png, dpi=300)  
+plt.show()  
