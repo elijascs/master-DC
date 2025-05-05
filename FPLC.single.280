@@ -4,7 +4,7 @@ import os
 
 %matplotlib inline
 
-# your file path
+# File path
 excel_file_path = r'C:\Users\[...]\Excel\X.xlsx'
 
 # Load excel (Header in line 3, index 2)
