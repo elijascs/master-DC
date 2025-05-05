@@ -29,24 +29,24 @@ fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(12, 6))  # Fitting size
 fs = 14
 
 # Assess max. elution volumne
-max_ml = df['ml'].max()  # Hier wird der maximale Wert von 'ml' gefunden
+max_ml = df['ml'].max()  
 
 # Plot data
-axs.plot(df['ml'], df['mAU'], color='tab:blue', label='$A_{280}$')  # Tiefgestelltes 280
+axs.plot(df['ml'], df['mAU'], color='tab:blue', label='$A_{280}$') 
 axs02 = axs.twinx()
 axs02.plot(df['%_ml'], 400 * df['%'] / 100, color='tab:orange', label='Imidazole conc.')
 
 # Set descriptions of axis
-axs.set_xlabel('Elution volume [mL]', fontsize=fs)  # Einheit für Elution volume
-axs.set_ylabel('$A_{280}$ [mAU]', fontsize=fs, color='tab:blue')  # Einheit für A280
-axs02.set_ylabel('Imidazole conc. [mM]', fontsize=fs, color='tab:orange')  # Einheit für Imidazole concentration
+axs.set_xlabel('Elution volume [mL]', fontsize=fs)  
+axs.set_ylabel('$A_{280}$ [mAU]', fontsize=fs, color='tab:blue')  
+axs02.set_ylabel('Imidazole conc. [mM]', fontsize=fs, color='tab:orange')  
 
 # Limits of axis
 axs.set_ylim(0, 400)
-axs.set_xlim(-5, max_ml)  # Setzt das x-Limit auf den maximalen Wert von 'ml'
+axs.set_xlim(-5, max_ml)  
 axs02.set_ylim(0, 410)
 
-# annotation of fractions
+# Annotation of fractions
 for i, j in zip(df['frac_ml'].dropna(), df['frac'].dropna()):
     if j != "Waste(Frac)":
         axs.vlines(i, 0, 43, color='k')
