@@ -1,0 +1,105 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+import matplotlib.lines as mlines
+
+%matplotlib inline
+
+# Excel files
+excel_file_paths = [
+    r'C:\Users\[...]\X.xlsx',
+    r'C:\Users\[...]\Y.xlsx',
+    r'C:\Users\[...]\Z.xlsx'
+]
+
+# Initialize plot
+fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(12, 6)) 
+fs = 14
+
+# Assess max. elution volume
+max_ml = 0
+
+# Line style for A_280 and imidazole conc.
+line_styles = {
+    'LgtB': '-',
+    'PmHS2': '--',
+    'BcsAB': '-.'
+}
+
+# Common y-axis for imidazole conc.
+axs02 = axs.twinx()
+
+# Labels for legend
+labels_280 = ['LgtB', 'PmHS2', 'BcsAB']
+labels_imidazole = ['Imidazole conc. - LgtB', 'Imidazole conc. - PmHS2', 'Imidazole conc. - BcsAB']
+
+# Colors
+colors_280 = ['tab:blue', 'tab:blue', 'tab:blue']  
+colors_imidazole = ['tab:orange', 'tab:orange', 'tab:orange']  
+
+# Iterate over excel files and plotting
+for idx, excel_file_path in enumerate(excel_file_paths):
+    if os.path.exists(excel_file_path):
+        df = pd.read_excel(excel_file_path, header=2)
+
+        df.rename(columns={
+            'ml': 'ml',
+            'mAU': 'mAU',
+            'ml.2': '%_ml',
+            '%': '%',
+            'ml.3': 'Injection',
+            'ml.5': 'frac_ml',
+            'Fraction': 'frac'
+        }, inplace=True)
+
+        max_ml = max(max_ml, df['ml'].max())
+
+        base_filename = os.path.splitext(os.path.basename(excel_file_path))[0]
+
+        if 'LgtB' in base_filename:
+            axs.plot(df['ml'], df['mAU'], color=colors_280[idx], linestyle=line_styles['LgtB'], label=labels_280[idx])
+            axs02.plot(df['%_ml'], 400 * df['%'] / 100, color=colors_imidazole[idx], linestyle=line_styles['LgtB'], label=labels_imidazole[idx])
+        elif 'PmHS2' in base_filename:
+            axs.plot(df['ml'], df['mAU'], color=colors_280[idx], linestyle=line_styles['PmHS2'], label=labels_280[idx])
+            axs02.plot(df['%_ml'], 400 * df['%'] / 100, color=colors_imidazole[idx], linestyle=line_styles['PmHS2'], label=labels_imidazole[idx])
+        elif 'BcsAB' in base_filename:
+            axs.plot(df['ml'], df['mAU'], color=colors_280[idx], linestyle=line_styles['BcsAB'], label=labels_280[idx])
+            axs02.plot(df['%_ml'], 400 * df['%'] / 100, color=colors_imidazole[idx], linestyle=line_styles['BcsAB'], label=labels_imidazole[idx])
+    else:
+        print(f"File not existing: {excel_file_path}")
+
+# Set axis description with units
+axs.set_xlabel('Elution volume [mL]', fontsize=fs)
+axs.set_ylabel(r'$A_{280}$ [mAU]', fontsize=fs, color='tab:blue')
+axs02.set_ylabel('Imidazole conc. [mM]', fontsize=fs, color='tab:orange')
+
+# Limits of axis
+axs.set_ylim(0, 400)
+axs.set_xlim(0, max_ml)
+axs02.set_ylim(0, 410)
+
+# Legend
+legend_combined = axs.legend(
+    handles=[
+        mlines.Line2D([], [], color='tab:blue', marker='o', linestyle='None', markersize=8, label='$A_{280}$'),
+        mlines.Line2D([], [], color='tab:orange', marker='o', linestyle='None', markersize=8, label='Imidazole conc.'),
+        mlines.Line2D([], [], color='black', linestyle='-', linewidth=2, label='LgtB'),
+        mlines.Line2D([], [], color='black', linestyle='--', linewidth=2, label='PmHS2'),
+        mlines.Line2D([], [], color='black', linestyle='-.', linewidth=2, label='BcsAB')
+    ],
+    loc='upper right',
+    fontsize=fs,
+    frameon=False
+)
+
+axs.add_artist(legend_combined)
+
+# Layout and safe
+fig.tight_layout()
+
+# Safe (png and svg) and plot
+output_svg = r'C:\Users\Lenovo\Documents\BT Studies\MASTER PROJECT\Chromatograms\output\combined_chromatogram.svg'
+output_png = r'C:\Users\Lenovo\Documents\BT Studies\MASTER PROJECT\Chromatograms\output\combined_chromatogram.png'
+plt.savefig(output_svg, format='svg')
+plt.savefig(output_png, dpi=300)
+plt.show()
