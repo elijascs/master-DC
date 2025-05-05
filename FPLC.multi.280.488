@@ -1,0 +1,72 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+import matplotlib.lines as mlines  # To create custom legend handles
+
+# Defining file paths for datasets
+file_paths = [
+    r'C:\Users\[...]\X.xlsx',
+    r'C:\Users\[...]\Y.xlsx',
+    r'C:\Users\[...]\Z.xlsx',
+    r'C:\Users\[...]\O.xlsx',
+]
+
+labels = ['BL21(DE3)_0.1_20', 'BL21(DE3)_0.4_25', 'S.T7Expr._0.1_25', 'S.T7Expr._0.4_25']
+line_styles = ['-', '--', '-.', ':']  # Line styles
+colors_280 = ['darkblue', 'royalblue', 'mediumblue', 'cadetblue']  # Blue colors
+colors_488 = ['darkgreen', 'forestgreen', 'seagreen', 'mediumseagreen']  # Green colors
+colors_imidazole = ['darkred', 'firebrick', 'orangered', 'tomato']  # Red colors
+
+fs = 14  # Font size for plots
+
+# Initializing plot
+fig, axs = plt.subplots(figsize=(12, 6))
+axs02 = axs.twinx()
+axs03 = axs.twinx()
+axs03.spines['right'].set_position(('outward', 60))  # Move third Y-axis outward
+
+# Looping over files and plotting data
+for idx, file_path in enumerate(file_paths):
+    df = pd.read_excel(file_path, header=2)
+    df.rename(columns={
+        'ml': 'ml',
+        'mAU': 'mAU_280',
+        'ml.2': '%_ml',
+        '%': '%',
+        'ml.3': 'Injection',
+        'ml.5': 'frac_ml',
+        'Fraction': 'frac',
+        'ml.7': 'ml_488',
+        'mAU.2': 'mAU_488'
+    }, inplace=True)
+
+    axs.plot(df['ml'], df['mAU_280'], linestyle=line_styles[idx], color=colors_280[idx])
+    axs02.plot(df['%_ml'], 400 * df['%'] / 100, linestyle=line_styles[idx], color=colors_imidazole[idx], alpha=0.5)
+    axs03.plot(df['ml_488'], df['mAU_488'], linestyle=line_styles[idx], color=colors_488[idx])
+
+# Setting labels
+axs.set_xlabel('Elution volume [mL]', fontsize=fs)
+axs.set_ylabel('$A_{280}$ [mAU]', fontsize=fs, color='tab:blue')
+axs02.set_ylabel('Imidazole conc. [mM]', fontsize=fs, color='tab:orange')
+axs03.set_ylabel('$A_{488}$ [mAU]', fontsize=fs, color='tab:green')
+
+# Setting limits
+axs.set_xlim(0, None)  # Start x-axis at 0 mL
+axs.set_ylim(0, 400)
+axs02.set_ylim(0, 410)
+axs03.set_ylim(0, 20)
+
+# Legend handles with black color lines
+legend_handles = [
+    mlines.Line2D([], [], color='black', linestyle=line_styles[i], label=labels[i])
+    for i in range(len(labels))
+]
+
+# Legend below the plot
+axs.legend(handles=legend_handles, loc='upper center', fontsize=fs, frameon=False, ncol=4, bbox_to_anchor=(0.5, -0.1))
+
+# Adjusting layout and save (png and svg)
+fig.tight_layout()
+plt.savefig('chromatogram_comparison.svg', format='svg')
+plt.savefig('chromatogram_comparison.png', dpi=300)
+plt.show()
